@@ -12,6 +12,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -87,11 +89,15 @@ public class MainActivity extends Activity implements View.OnClickListener {
   }
 
   private void installStockApks() {
+    if (!"XX.EUR.SOP.00.191209".equals(getFwVersion())) {
+      return;
+    }
+
     try {
       mountSystemRw();
 
       String[] files = getAssets().list("stock/apk");
-      for(String file : files) {
+      for (String file : files) {
         String filepath = extractAsset("stock/apk/" + file, file);
         if (filepath == null) {
           return;
@@ -299,6 +305,23 @@ public class MainActivity extends Activity implements View.OnClickListener {
     Matcher matcher = pattern.matcher(details);
     if (matcher.find()) {
       return matcher.group();
+    }
+    return null;
+  }
+
+  private String getFwVersion() {
+    try {
+      Class aClass = Class.forName("android.os.SystemProperties");
+      Method method = aClass.getDeclaredMethod("get", String.class);
+      return (String) method.invoke(null, "ro.lge.fw_version");
+    } catch (ClassNotFoundException e) {
+      handleException(e);
+    } catch (NoSuchMethodException e) {
+      handleException(e);
+    } catch (IllegalAccessException e) {
+      handleException(e);
+    } catch (InvocationTargetException e) {
+      handleException(e);
     }
     return null;
   }
