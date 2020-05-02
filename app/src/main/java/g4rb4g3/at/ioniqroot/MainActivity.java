@@ -3,6 +3,7 @@ package g4rb4g3.at.ioniqroot;
 import android.app.Activity;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.RemoteException;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
@@ -33,22 +34,46 @@ public class MainActivity extends Activity implements View.OnClickListener {
   public void onClick(View v) {
     switch (v.getId()) {
       case R.id.btn_telnet_start:
-        Telnet.getInstance(this).start();
+        try {
+          Telnet.getInstance(this).start();
+        } catch (RemoteException e) {
+          handleException(e);
+        }
         break;
       case R.id.btn_telnet_stop:
-        Telnet.getInstance(this).stop();
+        try {
+          Telnet.getInstance(this).stop();
+        } catch (RemoteException e) {
+          handleException(e);
+        }
         break;
       case R.id.btn_goto_cts:
-        ProcessExecutor.executeRootCommand(this, "am start -n com.lge.ivi.ctstest/com.lge.ivi.ctstest.CTSTestEnableScreen");
+        try {
+          ProcessExecutor.executeRootCommand("am start -n com.lge.ivi.ctstest/com.lge.ivi.ctstest.CTSTestEnableScreen");
+        } catch (RemoteException e) {
+          handleException(e);
+        }
         break;
       case R.id.btn_mount_system_rw:
-        mountSystemRw();
+        try {
+          mountSystemRw();
+        } catch (RemoteException e) {
+          handleException(e);
+        }
         break;
       case R.id.btn_mount_system_ro:
-        mountSystemRo();
+        try {
+          mountSystemRo();
+        } catch (RemoteException e) {
+          handleException(e);
+        }
         break;
       case R.id.btn_reboot:
-        ProcessExecutor.executeRootCommand(this, "reboot");
+        try {
+          ProcessExecutor.executeRootCommand("reboot");
+        } catch (RemoteException e) {
+          handleException(e);
+        }
         break;
       case R.id.btn_install_microg:
         installMicroG();
@@ -56,14 +81,19 @@ public class MainActivity extends Activity implements View.OnClickListener {
     }
   }
 
+  private void handleException(Exception e) {
+    Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
+    Log.e(TAG, e.getMessage(), e);
+  }
+
   private void installMicroG() {
     if (!isRoboEnabled()) {
       return;
     }
 
-    makeSystemWriteable();
-
     try {
+      mountSystemRw();
+
       //root device and install supersu
       String filepath = extractAsset("su/bin/su", "su");
       if (filepath == null) {
@@ -73,18 +103,18 @@ public class MainActivity extends Activity implements View.OnClickListener {
       if (!success) {
         return;
       }
-      ProcessExecutor.executeRootCommand(this, getCpString(filepath, "/system/xbin/su"));
-      ProcessExecutor.executeRootCommand(this, "chmod 6755 /system/xbin/su");
+      ProcessExecutor.executeRootCommand(getCpString(filepath, "/system/xbin/su"));
+      ProcessExecutor.executeRootCommand("chmod 6755 /system/xbin/su");
 
       //install xposed framework
       String filepathAppProcess = extractAsset("xposed/bin/app_process", "app_process");
       if (filepathAppProcess == null) {
         return;
       }
-      ProcessExecutor.executeRootCommand(this, "mv /system/bin/app_process /system/bin/app_process.orig");
-      ProcessExecutor.executeRootCommand(this, getCpString(filepathAppProcess, "/system/bin/app_process"));
-      ProcessExecutor.executeRootCommand(this, "chmod 755 /system/bin/app_process");
-      ProcessExecutor.executeRootCommand(this, "chown root:shell /system/bin/app_process");
+      ProcessExecutor.executeRootCommand("mv /system/bin/app_process /system/bin/app_process.orig");
+      ProcessExecutor.executeRootCommand(getCpString(filepathAppProcess, "/system/bin/app_process"));
+      ProcessExecutor.executeRootCommand("chmod 755 /system/bin/app_process");
+      ProcessExecutor.executeRootCommand("chown root:shell /system/bin/app_process");
 
       success = installApk("xposed/apk/de.robv.android.xposed.installer_v32_de4f0d.apk", "xposed.apk");
       if (!success) {
@@ -92,17 +122,17 @@ public class MainActivity extends Activity implements View.OnClickListener {
       }
 
       String owner = getOwner("/data/data", "de.robv.android.xposed.installer");
-      if(owner == null) {
+      if (owner == null) {
         return;
       }
 
       filepath = extractAsset("xposed/data/bin/XposedBridge.jar", "XposedBridge.jar");
-      ProcessExecutor.executeRootCommand(this, "mkdir /data/data/de.robv.android.xposed.installer/bin");
-      ProcessExecutor.executeRootCommand(this, getCpString(filepath, "/data/data/de.robv.android.xposed.installer/bin/XposedBridge.jar.newversion"));
-      ProcessExecutor.executeRootCommand(this, getCpString(filepathAppProcess, "/data/data/de.robv.android.xposed.installer/bin/app_process"));
-      ProcessExecutor.executeRootCommand(this, "chmod 775 /data/data/de.robv.android.xposed.installer/bin/");
-      ProcessExecutor.executeRootCommand(this, "chmod 644 /data/data/de.robv.android.xposed.installer/bin/XposedBridge.jar");
-      ProcessExecutor.executeRootCommand(this, "chmod 700 /data/data/de.robv.android.xposed.installer/bin/app_process");
+      ProcessExecutor.executeRootCommand("mkdir /data/data/de.robv.android.xposed.installer/bin");
+      ProcessExecutor.executeRootCommand(getCpString(filepath, "/data/data/de.robv.android.xposed.installer/bin/XposedBridge.jar.newversion"));
+      ProcessExecutor.executeRootCommand(getCpString(filepathAppProcess, "/data/data/de.robv.android.xposed.installer/bin/app_process"));
+      ProcessExecutor.executeRootCommand("chmod 775 /data/data/de.robv.android.xposed.installer/bin/");
+      ProcessExecutor.executeRootCommand("chmod 644 /data/data/de.robv.android.xposed.installer/bin/XposedBridge.jar");
+      ProcessExecutor.executeRootCommand("chmod 700 /data/data/de.robv.android.xposed.installer/bin/app_process");
 
       //install signature fake xposed module
       success = installApk("xposed/apk/com.thermatk.android.xf.fakegapps_v3_bfc686.apk", "fakegapps.apk");
@@ -110,33 +140,39 @@ public class MainActivity extends Activity implements View.OnClickListener {
         return;
       }
 
-      ProcessExecutor.executeRootCommand(this, "mkdir /data/data/de.robv.android.xposed.installer/conf");
+      ProcessExecutor.executeRootCommand("mkdir /data/data/de.robv.android.xposed.installer/conf");
       filepath = extractAsset("xposed/data/conf/modules.list", "modules.list");
-      ProcessExecutor.executeRootCommand(this, getCpString(filepath, "/data/data/de.robv.android.xposed.installer/conf/modules.list"));
-      ProcessExecutor.executeRootCommand(this, "chmod 775 /data/data/de.robv.android.xposed.installer/conf/");
-      ProcessExecutor.executeRootCommand(this, "chmod 664 /data/data/de.robv.android.xposed.installer/conf/*");
+      ProcessExecutor.executeRootCommand(getCpString(filepath, "/data/data/de.robv.android.xposed.installer/conf/modules.list"));
+      ProcessExecutor.executeRootCommand("chmod 775 /data/data/de.robv.android.xposed.installer/conf/");
+      ProcessExecutor.executeRootCommand("chmod 664 /data/data/de.robv.android.xposed.installer/conf/*");
 
-      ProcessExecutor.executeRootCommand(this, "mkdir /data/data/de.robv.android.xposed.installer/shared_prefs");
+      ProcessExecutor.executeRootCommand("mkdir /data/data/de.robv.android.xposed.installer/shared_prefs");
       filepath = extractAsset("xposed/data/shared_prefs/enabled_modules.xml", "enabled_modules.xml");
-      ProcessExecutor.executeRootCommand(this, getCpString(filepath, "/data/data/de.robv.android.xposed.installer/shared_prefs/enabled_modules.xml"));
-      ProcessExecutor.executeRootCommand(this, "chmod 775 /data/data/de.robv.android.xposed.installer/shared_prefs/");
-      ProcessExecutor.executeRootCommand(this, "chmod 664 /data/data/de.robv.android.xposed.installer/shared_prefs/*");
+      ProcessExecutor.executeRootCommand(getCpString(filepath, "/data/data/de.robv.android.xposed.installer/shared_prefs/enabled_modules.xml"));
+      ProcessExecutor.executeRootCommand("chmod 775 /data/data/de.robv.android.xposed.installer/shared_prefs/");
+      ProcessExecutor.executeRootCommand("chmod 664 /data/data/de.robv.android.xposed.installer/shared_prefs/*");
 
-      for(String dir : new String[] {"bin", "conf", "shared_prefs"}) {
+      for (String dir : new String[]{"bin", "conf", "shared_prefs"}) {
         StringBuilder cmd = new StringBuilder("busybox find /data/data/de.robv.android.xposed.installer/").append(dir).append(" | busybox xargs chown ").append(owner).append(":").append(owner);
-        ProcessExecutor.executeRootCommand(this, cmd.toString());
+        ProcessExecutor.executeRootCommand(cmd.toString());
       }
 
       success = installApk("microg/apk/GmsCore-v0.2.10.19420.apk", "GmsCore.apk");
-      if(!success) {
+      if (!success) {
         return;
       }
       success = installApk("microg/apk/BlankStore.apk", "BlankStore.apk");
-      if(!success) {
+      if (!success) {
         return;
       }
+    } catch (RemoteException e) {
+      handleException(e);
     } finally {
-      mountSystemRo();
+      try {
+        mountSystemRo();
+      } catch (RemoteException e) {
+        handleException(e);
+      }
     }
   }
 
@@ -148,16 +184,16 @@ public class MainActivity extends Activity implements View.OnClickListener {
     return cmd.toString();
   }
 
-  private void mountSystemRw() {
-    ProcessExecutor.executeRootCommand(this, "mount -o remount,rw /system");
+  private void mountSystemRw() throws RemoteException {
+    ProcessExecutor.executeRootCommand("mount -o remount,rw /system");
   }
 
-  private void mountSystemRo() {
-    ProcessExecutor.executeRootCommand(this, "sync -f /system");
-    ProcessExecutor.executeRootCommand(this, "mount -o remount,ro /system");
+  private void mountSystemRo() throws RemoteException {
+    ProcessExecutor.executeRootCommand("sync -f /system");
+    ProcessExecutor.executeRootCommand("mount -o remount,ro /system");
   }
 
-  private boolean installApk(String assetPath, String filename) {
+  private boolean installApk(String assetPath, String filename) throws RemoteException {
     if (!isRoboEnabled()) {
       return false;
     }
@@ -168,10 +204,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
     }
 
     StringBuilder cmd = new StringBuilder("chmod 644 ").append(filepath);
-    ProcessExecutor.executeRootCommand(this, cmd.toString());
+    ProcessExecutor.executeRootCommand(cmd.toString());
 
     cmd = new StringBuilder("pm install -r ").append(filepath);
-    ProcessExecutor.executeRootCommand(this, cmd.toString());
+    ProcessExecutor.executeRootCommand(cmd.toString());
 
     return true;
   }
@@ -183,16 +219,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
       return false;
     }
     return true;
-  }
-
-  private void makeSystemWriteable() {
-    String ro = ProcessExecutor.execute("mount");
-    for (String s : ro.split("\n")) {
-      if (s.startsWith("/dev/block/platform/bdm/by-num/p2") && s.contains(" ro,")) {
-        mountSystemRw();
-        break;
-      }
-    }
   }
 
   private boolean isPackageInstalled(String packageName) {
@@ -223,23 +249,23 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
       return f.getAbsolutePath();
     } catch (Exception e) {
-      Log.e(TAG, "error extracting asset " + assetPath, e);
+      handleException(e);
       return null;
     }
   }
 
-  private String getOwner(String path, String directory) {
+  private String getOwner(String path, String directory) throws RemoteException {
     StringBuilder cmd = new StringBuilder("ls -l ")
         .append(path)
         .append("| grep ")
         .append(directory)
         .append(" > /data/data/g4rb4g3.at.ioniqroot/cache/owner.txt");
-    ProcessExecutor.executeRootCommand(this, cmd.toString());
-    ProcessExecutor.executeRootCommand(this, "chmod 666 /data/data/g4rb4g3.at.ioniqroot/cache/owner.txt");
+    ProcessExecutor.executeRootCommand(cmd.toString());
+    ProcessExecutor.executeRootCommand("chmod 666 /data/data/g4rb4g3.at.ioniqroot/cache/owner.txt");
     String details = ProcessExecutor.execute("cat /data/data/g4rb4g3.at.ioniqroot/cache/owner.txt");
     Pattern pattern = Pattern.compile("u0_a[0-9][0-9]");
     Matcher matcher = pattern.matcher(details);
-    if(matcher.find()) {
+    if (matcher.find()) {
       return matcher.group();
     }
     return null;

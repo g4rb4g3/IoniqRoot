@@ -1,9 +1,9 @@
 package g4rb4g3.at.ioniqroot;
 
-import android.content.Context;
+import android.os.RemoteException;
 import android.util.Log;
 
-import com.lge.ivi.media.ExtMediaManager;
+import com.lge.ivi.server.ExtMediaService;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -42,7 +42,7 @@ public class ProcessExecutor {
     return null;
   }
 
-  public static void executeRootCommand(Context context, String command) {
-    ExtMediaManager.getInstance(context).excute(command, null);
+  public static void executeRootCommand(String command) throws RemoteException {
+    ExtMediaService.getInstance().excute(command, null);
   }
 }

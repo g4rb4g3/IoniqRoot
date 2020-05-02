@@ -1,6 +1,7 @@
 package g4rb4g3.at.ioniqroot;
 
 import android.content.Context;
+import android.os.RemoteException;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -18,17 +19,17 @@ public class Telnet {
     return sInstance;
   }
 
-  public void start() {
-    ProcessExecutor.executeRootCommand(sContext, "busybox nohup busybox telnetd -F -p 19991 -l /system/bin/sh > /dev/null 2> /dev/null < /dev/null &");
+  public void start() throws RemoteException {
+    ProcessExecutor.executeRootCommand("busybox nohup busybox telnetd -F -p 19991 -l /system/bin/sh > /dev/null 2> /dev/null < /dev/null &");
   }
 
-  public void stop() {
+  public void stop() throws RemoteException {
     List<Integer> pids = new ArrayList<Integer>();
     String p = ProcessExecutor.execute("busybox pidof busybox");
     for (String pid : p.split(" ")) {
       pids.add(Integer.valueOf(pid));
     }
     int pid = Collections.min(pids);
-    ProcessExecutor.executeRootCommand(sContext, "kill " + pid);
+    ProcessExecutor.executeRootCommand("kill " + pid);
   }
 }
