@@ -10,6 +10,7 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -28,6 +29,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     findViewById(R.id.btn_mount_system_ro).setOnClickListener(this);
     findViewById(R.id.btn_reboot).setOnClickListener(this);
     findViewById(R.id.btn_install_microg).setOnClickListener(this);
+    findViewById(R.id.btn_install_stock_apks).setOnClickListener(this);
   }
 
   @Override
@@ -78,6 +80,36 @@ public class MainActivity extends Activity implements View.OnClickListener {
       case R.id.btn_install_microg:
         installMicroG();
         break;
+      case R.id.btn_install_stock_apks:
+        installStockApks();
+        break;
+    }
+  }
+
+  private void installStockApks() {
+    try {
+      mountSystemRw();
+
+      String[] files = getAssets().list("stock/apk");
+      for(String file : files) {
+        String filepath = extractAsset("stock/apk/" + file, file);
+        if (filepath == null) {
+          return;
+        }
+
+        ProcessExecutor.executeRootCommand(getCpString(filepath, "/system/app/" + file));
+        ProcessExecutor.executeRootCommand("chmod 644 /system/app/" + file);
+      }
+    } catch (IOException e) {
+      handleException(e);
+    } catch (RemoteException e) {
+      handleException(e);
+    } finally {
+      try {
+        mountSystemRo();
+      } catch (RemoteException e) {
+        handleException(e);
+      }
     }
   }
 
