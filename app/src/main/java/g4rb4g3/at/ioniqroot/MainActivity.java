@@ -90,6 +90,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
   private void installStockApks() {
     if (!"XX.EUR.SOP.00.191209".equals(getFwVersion())) {
+      Toast.makeText(this, getString(R.string.wrong_fw_version), Toast.LENGTH_LONG).show();
       return;
     }
 
