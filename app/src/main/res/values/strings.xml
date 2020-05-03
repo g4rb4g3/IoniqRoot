@@ -9,4 +9,14 @@
     <string name="disclaimer">This software is provided as is, in the hope that it will be useful, but without any warranty. Use at your own risk.</string>
     <string name="ok">Ok</string>
     <string name="exit">Exit</string>
+    <string name="or">or</string>
+    <string name="start_telnet">Start telnet server</string>
+    <string name="stop_telnet">Stop telnet server</string>
+    <string name="error_getting_ip">Error getting IP, make sure you are connected to a wifi.</string>
+    <string name="ip">IP:</string>
+    <string name="danger_zone">Danger zone!</string>
+    <string name="go_to_ctstest_service">Go to CTSTest Service</string>
+    <string name="install_microg">Install MicroG</string>
+    <string name="remount_system_rw">Remount /system rw</string>
+    <string name="remount_system_ro">Remount /system ro</string>
 </resources>

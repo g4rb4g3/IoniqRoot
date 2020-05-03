@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.os.RemoteException;
 import android.util.Log;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.File;
@@ -18,6 +19,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.SocketException;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -39,6 +42,24 @@ public class MainActivity extends Activity implements View.OnClickListener {
     findViewById(R.id.btn_reboot).setOnClickListener(this);
     findViewById(R.id.btn_install_microg).setOnClickListener(this);
     findViewById(R.id.btn_install_stock_apks).setOnClickListener(this);
+
+    try {
+      List<String> ips = Telnet.getIPAddresses();
+      if (ips.size() == 0) {
+        ((TextView) findViewById(R.id.tv_ip)).setText(R.string.error_getting_ip);
+      } else {
+        StringBuilder sb = new StringBuilder();
+        for (String ip : ips) {
+          if (sb.length() > 0) {
+            sb.append(" ").append(getString(R.string.or)).append(" ");
+          }
+          sb.append(ip);
+        }
+        ((TextView) findViewById(R.id.tv_ip)).setText(sb.toString());
+      }
+    } catch (SocketException e) {
+      handleException(e);
+    }
   }
 
   private void showWarning() {
@@ -55,7 +76,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         .setNegativeButton(R.string.exit, new DialogInterface.OnClickListener() {
           @Override
           public void onClick(DialogInterface dialog, int which) {
-            ((Activity)getApplicationContext()).finish();
+            ((Activity) getApplicationContext()).finish();
           }
         })
         .show();
