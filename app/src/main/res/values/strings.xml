@@ -15,10 +15,14 @@
     <string name="error_getting_ip">Error getting IP, make sure you are connected to a wifi.</string>
     <string name="ip">IP:</string>
     <string name="danger_zone">Danger zone!</string>
-    <string name="go_to_ctstest_service">Go to CTSTest Service</string>
-    <string name="install_microg">Install MicroG</string>
+    <string name="uninstall_microg">Uninstall microG</string>
+    <string name="install_microg">Install microG</string>
     <string name="remount_system_rw">Remount /system rw</string>
     <string name="remount_system_ro">Remount /system ro</string>
     <string name="go_to_engineer_upgrade_activity">Go to engineer upgrade activity</string>
     <string name="enable_cts_first">Enable CTS Test first!</string>
+    <string name="installing_microg">Installing microG</string>
+    <string name="installing">Installing</string>
+    <string name="uninstalling_microg">Uninstalling microG</string>
+    <string name="process_failed">Process failed.</string>
 </resources>
