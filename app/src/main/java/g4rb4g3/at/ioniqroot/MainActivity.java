@@ -1,7 +1,9 @@
 package g4rb4g3.at.ioniqroot;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.RemoteException;
@@ -25,6 +27,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
+
+    showWarning();
+
     setContentView(R.layout.activity_main);
     findViewById(R.id.btn_telnet_start).setOnClickListener(this);
     findViewById(R.id.btn_telnet_stop).setOnClickListener(this);
@@ -34,6 +39,26 @@ public class MainActivity extends Activity implements View.OnClickListener {
     findViewById(R.id.btn_reboot).setOnClickListener(this);
     findViewById(R.id.btn_install_microg).setOnClickListener(this);
     findViewById(R.id.btn_install_stock_apks).setOnClickListener(this);
+  }
+
+  private void showWarning() {
+    new AlertDialog.Builder(this)
+        .setCancelable(false)
+        .setTitle(R.string.disclaimer_title)
+        .setMessage(R.string.disclaimer)
+        .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+          @Override
+          public void onClick(DialogInterface dialog, int which) {
+            dialog.dismiss();
+          }
+        })
+        .setNegativeButton(R.string.exit, new DialogInterface.OnClickListener() {
+          @Override
+          public void onClick(DialogInterface dialog, int which) {
+            ((Activity)getApplicationContext()).finish();
+          }
+        })
+        .show();
   }
 
   @Override
@@ -151,7 +176,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
             handleException(e);
           }
           progressDialog.dismiss();
-          if(success) {
+          if (success) {
             runOnUiThread(new Runnable() {
               @Override
               public void run() {

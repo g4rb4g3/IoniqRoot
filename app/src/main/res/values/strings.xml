@@ -5,4 +5,8 @@
     <string name="restore_stock_applications">Restore stock applications</string>
     <string name="successfully_completed">Process finished successfully, please reboot to apply changes.</string>
     <string name="reboot">Reboot</string>
+    <string name="disclaimer_title">Disclaimer</string>
+    <string name="disclaimer">This software is provided as is, in the hope that it will be useful, but without any warranty. Use at your own risk.</string>
+    <string name="ok">Ok</string>
+    <string name="exit">Exit</string>
 </resources>
