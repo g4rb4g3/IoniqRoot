@@ -223,10 +223,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
   }
 
   private void installMicroG() {
-    if (!isRoboEnabled()) {
-      return;
-    }
-
     try {
       mountSystemRw();
 
@@ -331,10 +327,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
   }
 
   private boolean installApk(String assetPath, String filename) throws RemoteException {
-    if (!isRoboEnabled()) {
-      return false;
-    }
-
     String filepath = extractAsset(assetPath, filename);
     if (filepath == null) {
       return false;
@@ -346,15 +338,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
     cmd = new StringBuilder("pm install -r ").append(filepath);
     ProcessExecutor.executeRootCommand(cmd.toString());
 
-    return true;
-  }
-
-  private boolean isRoboEnabled() {
-    String robo = ProcessExecutor.execute("getprop persist.sys.robo.enable");
-    if (!"true".equals(robo)) {
-      Toast.makeText(this, R.string.enable_cts_first, Toast.LENGTH_LONG).show();
-      return false;
-    }
     return true;
   }
 
