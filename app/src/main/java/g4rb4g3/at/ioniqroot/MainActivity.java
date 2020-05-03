@@ -216,6 +216,11 @@ public class MainActivity extends Activity implements View.OnClickListener {
   }
 
   private void installMicroG() {
+    if(new File("/system/bin/app_process.orig").exists()) {
+      Toast.makeText(this, R.string.already_installed, Toast.LENGTH_LONG).show();
+      return;
+    }
+    
     final ProgressDialog progressDialog = new ProgressDialog(this);
     progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
     progressDialog.setTitle(getString(R.string.installing_microg));
@@ -329,6 +334,11 @@ public class MainActivity extends Activity implements View.OnClickListener {
   }
 
   private void uninstallMicroG() {
+    if(!new File("/system/bin/app_process.orig").exists()) {
+      Toast.makeText(this, R.string.not_installed, Toast.LENGTH_LONG).show();
+      return;
+    }
+
     final ProgressDialog progressDialog = new ProgressDialog(this);
     progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
     progressDialog.setTitle(getString(R.string.uninstalling_microg));
