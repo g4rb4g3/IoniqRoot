@@ -1,6 +1,7 @@
 package g4rb4g3.at.ioniqroot;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.RemoteException;
@@ -9,6 +10,7 @@ import android.view.View;
 import android.widget.Toast;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -94,30 +96,72 @@ public class MainActivity extends Activity implements View.OnClickListener {
       return;
     }
 
+    final String[] files;
     try {
-      mountSystemRw();
-
-      String[] files = getAssets().list("stock/apk");
-      for (String file : files) {
-        String filepath = extractAsset("stock/apk/" + file, file);
-        if (filepath == null) {
-          return;
-        }
-
-        ProcessExecutor.executeRootCommand(getCpString(filepath, "/system/app/" + file));
-        ProcessExecutor.executeRootCommand("chmod 644 /system/app/" + file);
-      }
+      files = getAssets().list("stock/apk");
     } catch (IOException e) {
       handleException(e);
-    } catch (RemoteException e) {
-      handleException(e);
-    } finally {
-      try {
-        mountSystemRo();
-      } catch (RemoteException e) {
-        handleException(e);
-      }
+      return;
     }
+
+    final ProgressDialog progressDialog = new ProgressDialog(this);
+    progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+    progressDialog.setTitle(getString(R.string.restoring_stock_apk));
+    progressDialog.setMessage("");
+    progressDialog.setCancelable(false);
+    progressDialog.setMax(files.length);
+    progressDialog.show();
+
+    new Thread(new Runnable() {
+      @Override
+      public void run() {
+        boolean success = true;
+        try {
+          mountSystemRw();
+
+          for (final String file : files) {
+            runOnUiThread(new Runnable() {
+              @Override
+              public void run() {
+                progressDialog.setMessage(file);
+                progressDialog.incrementProgressBy(1);
+              }
+            });
+
+            String filepath = extractAsset("stock/apk/" + file, file);
+            if (filepath == null) {
+              throw new FileNotFoundException("error extracting asset " + file);
+            }
+
+            ProcessExecutor.executeRootCommand(getCpString(filepath, "/system/app/" + file));
+            ProcessExecutor.executeRootCommand("chmod 644 /system/app/" + file);
+
+            new File(filepath).delete();
+          }
+        } catch (RemoteException e) {
+          handleException(e);
+          success = false;
+        } catch (FileNotFoundException e) {
+          handleException(e);
+          success = false;
+        } finally {
+          try {
+            mountSystemRo();
+          } catch (RemoteException e) {
+            handleException(e);
+          }
+          progressDialog.dismiss();
+          if(success) {
+            runOnUiThread(new Runnable() {
+              @Override
+              public void run() {
+                Toast.makeText(getApplicationContext(), getString(R.string.successfully_completed), Toast.LENGTH_LONG).show();
+              }
+            });
+          }
+        }
+      }
+    }).start();
   }
 
   private void handleException(Exception e) {

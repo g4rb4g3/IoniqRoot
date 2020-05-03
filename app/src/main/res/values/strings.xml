@@ -1,4 +1,8 @@
 <resources>
     <string name="app_name">IoniqRoot</string>
     <string name="wrong_fw_version">Wrong firmware version. This has only been tested with 191209 release.</string>
+    <string name="restoring_stock_apk">Restoring stock applications</string>
+    <string name="restore_stock_applications">Restore stock applications</string>
+    <string name="successfully_completed">Process finished successfully, please reboot to apply changes.</string>
+    <string name="reboot">Reboot</string>
 </resources>

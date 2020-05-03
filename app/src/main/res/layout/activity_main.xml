@@ -75,7 +75,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="install stock apk files" />
+            android:text="@string/restore_stock_applications" />
     </TableRow>
 
     <TableRow
@@ -87,6 +87,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="reboot" />
+            android:text="@string/reboot" />
     </TableRow>
 </TableLayout>
