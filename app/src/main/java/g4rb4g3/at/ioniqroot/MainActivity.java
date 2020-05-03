@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.util.Log;
@@ -25,7 +24,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class MainActivity extends Activity implements View.OnClickListener {
-  private static final String TAG = "MainActivity";
+  private static final String TAG = "IoniqRoot";
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +41,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     findViewById(R.id.btn_reboot).setOnClickListener(this);
     findViewById(R.id.btn_install_microg).setOnClickListener(this);
     findViewById(R.id.btn_install_stock_apks).setOnClickListener(this);
+    findViewById(R.id.btn_eng_upgrade_activity).setOnClickListener(this);
 
     try {
       List<String> ips = Telnet.getIPAddresses();
@@ -132,6 +132,13 @@ public class MainActivity extends Activity implements View.OnClickListener {
         break;
       case R.id.btn_install_stock_apks:
         installStockApks();
+        break;
+      case R.id.btn_eng_upgrade_activity:
+        try {
+          ProcessExecutor.executeRootCommand("am start -n com.lge.ivi.engineermode/com.lge.ivi.engineermode.UpgradeActivity");
+        } catch (RemoteException e) {
+          handleException(e);
+        }
         break;
     }
   }
@@ -344,21 +351,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
   private boolean isRoboEnabled() {
     String robo = ProcessExecutor.execute("getprop persist.sys.robo.enable");
     if (!"true".equals(robo)) {
-      Toast.makeText(this, "enable cts test first!", Toast.LENGTH_LONG).show();
+      Toast.makeText(this, R.string.enable_cts_first, Toast.LENGTH_LONG).show();
       return false;
     }
     return true;
-  }
-
-  private boolean isPackageInstalled(String packageName) {
-    try {
-      PackageManager pm = this.getPackageManager();
-      pm.getPackageInfo(packageName, 0);
-      return true;
-    } catch (PackageManager.NameNotFoundException e) {
-      Toast.makeText(this, "packages " + packageName + " not installed, extract gapps first!", Toast.LENGTH_LONG).show();
-      return false;
-    }
   }
 
   private String extractAsset(String assetPath, String filename) {

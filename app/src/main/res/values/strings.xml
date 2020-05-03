@@ -19,4 +19,6 @@
     <string name="install_microg">Install MicroG</string>
     <string name="remount_system_rw">Remount /system rw</string>
     <string name="remount_system_ro">Remount /system ro</string>
+    <string name="go_to_engineer_upgrade_activity">Go to engineer upgrade activity</string>
+    <string name="enable_cts_first">Enable CTS Test first!</string>
 </resources>
