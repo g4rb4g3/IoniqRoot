@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.RemoteException;
@@ -52,7 +51,29 @@ public class MainActivity extends Activity implements View.OnClickListener {
     findViewById(R.id.btn_install_microg).setOnClickListener(this);
     findViewById(R.id.btn_install_stock_apks).setOnClickListener(this);
     findViewById(R.id.btn_eng_upgrade_activity).setOnClickListener(this);
+    findViewById(R.id.btn_eng_menu).setOnClickListener(this);
+    findViewById(R.id.btn_refresh_ip).setOnClickListener(this);
 
+    setIp();
+  }
+
+  private void showWarning() {
+    new AlertDialog.Builder(this)
+        .setCancelable(false)
+        .setTitle(R.string.disclaimer_title)
+        .setMessage(R.string.disclaimer)
+        .setPositiveButton(R.string.ok, (dialog, which) -> {
+          SharedPreferences.Editor editor = mSharedPreferences.edit();
+          editor.putBoolean(PREFERENCE_DISCLAIMER_APPROVED, true);
+          editor.commit();
+
+          dialog.dismiss();
+        })
+        .setNegativeButton(R.string.exit, (dialog, which) -> ((Activity) getApplicationContext()).finish())
+        .show();
+  }
+
+  private void setIp() {
     try {
       List<String> ips = Telnet.getIPAddresses();
       if (ips.size() == 0) {
@@ -70,30 +91,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
     } catch (SocketException e) {
       handleException(e);
     }
-  }
-
-  private void showWarning() {
-    new AlertDialog.Builder(this)
-        .setCancelable(false)
-        .setTitle(R.string.disclaimer_title)
-        .setMessage(R.string.disclaimer)
-        .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-          @Override
-          public void onClick(DialogInterface dialog, int which) {
-            SharedPreferences.Editor editor = mSharedPreferences.edit();
-            editor.putBoolean(PREFERENCE_DISCLAIMER_APPROVED, true);
-            editor.commit();
-            
-            dialog.dismiss();
-          }
-        })
-        .setNegativeButton(R.string.exit, new DialogInterface.OnClickListener() {
-          @Override
-          public void onClick(DialogInterface dialog, int which) {
-            ((Activity) getApplicationContext()).finish();
-          }
-        })
-        .show();
   }
 
   @Override
@@ -128,11 +125,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         }
         break;
       case R.id.btn_reboot:
-        try {
-          ProcessExecutor.executeRootCommand("reboot");
-        } catch (RemoteException e) {
-          handleException(e);
-        }
+        reboot();
         break;
       case R.id.btn_install_microg:
         installMicroG();
@@ -150,6 +143,24 @@ public class MainActivity extends Activity implements View.OnClickListener {
           handleException(e);
         }
         break;
+      case R.id.btn_eng_menu:
+        try {
+          ProcessExecutor.executeRootCommand("am start -n com.lge.ivi.engineermode/com.lge.ivi.engineermode.Engineering");
+        } catch (RemoteException e) {
+          handleException(e);
+        }
+        break;
+      case R.id.btn_refresh_ip:
+        setIp();
+        break;
+    }
+  }
+
+  private void reboot() {
+    try {
+      ProcessExecutor.executeRootCommand("reboot");
+    } catch (RemoteException e) {
+      handleException(e);
     }
   }
 
@@ -207,7 +218,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         }
         progressDialog.dismiss();
         if (success) {
-          showSuccess();
+          askReboot();
         } else {
           showFailed();
         }
@@ -325,9 +336,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
         } catch (RemoteException e) {
           handleException(e);
         }
+        clearCache();
         progressDialog.dismiss();
         if (success) {
-          showSuccess();
+          askReboot();
         } else {
           showFailed();
         }
@@ -371,7 +383,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         }
         progressDialog.dismiss();
         if (success) {
-          showSuccess();
+          askReboot();
         } else {
           showFailed();
         }
@@ -465,12 +477,28 @@ public class MainActivity extends Activity implements View.OnClickListener {
   private void setDialogMessage(final ProgressDialog progressDialog, final String message) {
     runOnUiThread(() -> progressDialog.setMessage(message));
   }
-
-  private void showSuccess() {
-    runOnUiThread(() -> Toast.makeText(getApplicationContext(), getString(R.string.successfully_completed), Toast.LENGTH_LONG).show());
-  }
-
+  
   private void showFailed() {
     runOnUiThread(() -> Toast.makeText(getApplicationContext(), getString(R.string.process_failed), Toast.LENGTH_LONG).show());
+  }
+
+  private void askReboot() {
+    runOnUiThread(() -> {
+      new AlertDialog.Builder(this)
+          .setMessage(R.string.successfully_completed)
+          .setPositiveButton(R.string.reboot, (dialog, which) -> {
+            reboot();
+          })
+          .setNegativeButton(R.string.cancel, (dialog, which) -> {
+            dialog.dismiss();
+          })
+          .show();
+    });
+  }
+
+  private void clearCache() {
+    for (File file : getCacheDir().listFiles()) {
+      file.delete();
+    }
   }
 }

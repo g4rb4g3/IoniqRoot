@@ -16,6 +16,13 @@
             android:layout_weight="1"
             android:text="@string/restore_stock_applications" />
 
+        <Button
+            android:id="@+id/btn_reboot"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/reboot" />
+
     </TableRow>
 
     <TableRow
@@ -23,16 +30,11 @@
         android:layout_height="match_parent">
 
         <Button
-            android:id="@+id/btn_reboot"
+            android:id="@+id/btn_eng_menu"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="@string/reboot" />
-    </TableRow>
-
-    <TableRow
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
+            android:text="@string/go_to_engineer_menu" />
 
         <Button
             android:id="@+id/btn_eng_upgrade_activity"
@@ -64,16 +66,22 @@
         android:layout_height="match_parent">
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/ip" />
 
         <TextView
             android:id="@+id/tv_ip"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="99" />
+            android:layout_weight="20" />
+
+        <Button
+            android:id="@+id/btn_refresh_ip"
+            android:layout_width="42dp"
+            android:layout_height="wrap_content"
+            android:drawableLeft="@android:drawable/stat_notify_sync" />
     </TableRow>
 
     <TableRow

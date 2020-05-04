@@ -27,4 +27,6 @@
     <string name="process_failed">Process failed.</string>
     <string name="already_installed">microG is already installed</string>
     <string name="not_installed">microG is not installed</string>
+    <string name="go_to_engineer_menu">Go to engineer menu</string>
+    <string name="cancel">Cancel</string>
 </resources>
