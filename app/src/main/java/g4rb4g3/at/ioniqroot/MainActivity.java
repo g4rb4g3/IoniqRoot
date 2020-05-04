@@ -3,7 +3,9 @@ package g4rb4g3.at.ioniqroot;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.util.Log;
@@ -26,11 +28,19 @@ import java.util.regex.Pattern;
 public class MainActivity extends Activity implements View.OnClickListener {
   public static final String TAG = "IoniqRoot";
 
+  public static final String PREFERENCES_NAME = "preferences";
+  public static final String PREFERENCE_DISCLAIMER_APPROVED = "disclaimer_approved";
+
+  private SharedPreferences mSharedPreferences;
+
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
+    mSharedPreferences = getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
 
-    showWarning();
+    if (!mSharedPreferences.getBoolean(PREFERENCE_DISCLAIMER_APPROVED, false)) {
+      showWarning();
+    }
 
     setContentView(R.layout.activity_main);
     findViewById(R.id.btn_telnet_start).setOnClickListener(this);
@@ -70,6 +80,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
         .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
           @Override
           public void onClick(DialogInterface dialog, int which) {
+            SharedPreferences.Editor editor = mSharedPreferences.edit();
+            editor.putBoolean(PREFERENCE_DISCLAIMER_APPROVED, true);
+            editor.commit();
+            
             dialog.dismiss();
           }
         })
