@@ -9,10 +9,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
+import static android.content.ContentValues.TAG;
+
 public class ProcessExecutor {
-
-  static final String TAG = "ProcessExecutor";
-
   public static String execute(String command) {
     BufferedReader bufferedReader = null;
     try {
@@ -22,7 +21,7 @@ public class ProcessExecutor {
       StringBuilder sb = new StringBuilder();
       String line;
       while ((line = bufferedReader.readLine()) != null) {
-        if(sb.length() > 0) {
+        if (sb.length() > 0) {
           sb.append("\n");
         }
         sb.append(line);
@@ -31,7 +30,7 @@ public class ProcessExecutor {
     } catch (IOException e) {
       Log.e(TAG, "error executing command " + command, e);
     } finally {
-      if(bufferedReader != null) {
+      if (bufferedReader != null) {
         try {
           bufferedReader.close();
         } catch (IOException e) {

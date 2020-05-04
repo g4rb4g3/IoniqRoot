@@ -24,7 +24,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class MainActivity extends Activity implements View.OnClickListener {
-  private static final String TAG = "IoniqRoot";
+  public static final String TAG = "IoniqRoot";
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -87,14 +87,14 @@ public class MainActivity extends Activity implements View.OnClickListener {
     switch (v.getId()) {
       case R.id.btn_telnet_start:
         try {
-          Telnet.getInstance(this).start();
+          Telnet.getInstance().start();
         } catch (RemoteException e) {
           handleException(e);
         }
         break;
       case R.id.btn_telnet_stop:
         try {
-          Telnet.getInstance(this).stop();
+          Telnet.getInstance().stop();
         } catch (RemoteException e) {
           handleException(e);
         }
@@ -161,50 +161,41 @@ public class MainActivity extends Activity implements View.OnClickListener {
     progressDialog.setMax(files.length);
     progressDialog.show();
 
-    new Thread(new Runnable() {
-      @Override
-      public void run() {
-        boolean success = true;
-        try {
-          mountSystemRw();
+    new Thread(() -> {
+      boolean success = true;
+      try {
+        mountSystemRw();
 
-          for (final String file : files) {
-            runOnUiThread(new Runnable() {
-              @Override
-              public void run() {
-                progressDialog.setMessage(file);
-                progressDialog.incrementProgressBy(1);
-              }
-            });
+        for (final String file : files) {
+          runOnUiThread(() -> {
+            progressDialog.setMessage(file);
+            progressDialog.incrementProgressBy(1);
+          });
 
-            String filepath = extractAsset("stock/apk/" + file, file);
-            if (filepath == null) {
-              throw new FileNotFoundException("error extracting asset " + file);
-            }
-
-            ProcessExecutor.executeRootCommand(getCpString(filepath, "/system/app/" + file));
-            ProcessExecutor.executeRootCommand("chmod 644 /system/app/" + file);
-
-            new File(filepath).delete();
+          String filepath = extractAsset("stock/apk/" + file, file);
+          if (filepath == null) {
+            throw new FileNotFoundException("error extracting asset " + file);
           }
+
+          ProcessExecutor.executeRootCommand(getCpString(filepath, "/system/app/" + file));
+          ProcessExecutor.executeRootCommand("chmod 644 /system/app/" + file);
+
+          new File(filepath).delete();
+        }
+      } catch (RemoteException | FileNotFoundException e) {
+        handleException(e);
+        success = false;
+      } finally {
+        try {
+          mountSystemRo();
         } catch (RemoteException e) {
           handleException(e);
-          success = false;
-        } catch (FileNotFoundException e) {
-          handleException(e);
-          success = false;
-        } finally {
-          try {
-            mountSystemRo();
-          } catch (RemoteException e) {
-            handleException(e);
-          }
-          progressDialog.dismiss();
-          if (success) {
-            showSuccess();
-          } else {
-            showFailed();
-          }
+        }
+        progressDialog.dismiss();
+        if (success) {
+          showSuccess();
+        } else {
+          showFailed();
         }
       }
     }).start();
@@ -216,11 +207,11 @@ public class MainActivity extends Activity implements View.OnClickListener {
   }
 
   private void installMicroG() {
-    if(new File("/system/bin/app_process.orig").exists()) {
+    if (new File("/system/bin/app_process.orig").exists()) {
       Toast.makeText(this, R.string.already_installed, Toast.LENGTH_LONG).show();
       return;
     }
-    
+
     final ProgressDialog progressDialog = new ProgressDialog(this);
     progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
     progressDialog.setTitle(getString(R.string.installing_microg));
@@ -228,113 +219,110 @@ public class MainActivity extends Activity implements View.OnClickListener {
     progressDialog.setCancelable(false);
     progressDialog.show();
 
-    new Thread(new Runnable() {
-      @Override
-      public void run() {
-        boolean success = true;
+    new Thread(() -> {
+      boolean success = true;
+      try {
+        mountSystemRw();
+
+        //root device and install supersu
+        setDialogMessage(progressDialog, getString(R.string.installing) + " SuperSU");
+        String filepath = extractAsset("su/bin/su", "su");
+        if (filepath == null) {
+          success = false;
+          return;
+        }
+        success = installApk("su/apk/Superuser.apk", "superuser.apk");
+        if (!success) {
+          return;
+        }
+        ProcessExecutor.executeRootCommand(getCpString(filepath, "/system/xbin/su"));
+        ProcessExecutor.executeRootCommand("chmod 6755 /system/xbin/su");
+
+        //install xposed framework
+        setDialogMessage(progressDialog, getString(R.string.installing) + " Xposed framework");
+        String filepathAppProcess = extractAsset("xposed/bin/app_process", "app_process");
+        if (filepathAppProcess == null) {
+          success = false;
+          return;
+        }
+        ProcessExecutor.executeRootCommand("mv /system/bin/app_process /system/bin/app_process.orig");
+        ProcessExecutor.executeRootCommand(getCpString(filepathAppProcess, "/system/bin/app_process"));
+        ProcessExecutor.executeRootCommand("chmod 755 /system/bin/app_process");
+        ProcessExecutor.executeRootCommand("chown root:shell /system/bin/app_process");
+
+        success = installApk("xposed/apk/de.robv.android.xposed.installer_v32_de4f0d.apk", "xposed.apk");
+        if (!success) {
+          return;
+        }
+
+        String owner = getOwner("/data/data", "de.robv.android.xposed.installer");
+        if (owner == null) {
+          success = false;
+          return;
+        }
+
+        filepath = extractAsset("xposed/data/bin/XposedBridge.jar", "XposedBridge.jar");
+        ProcessExecutor.executeRootCommand("mkdir /data/data/de.robv.android.xposed.installer/bin");
+        ProcessExecutor.executeRootCommand(getCpString(filepath, "/data/data/de.robv.android.xposed.installer/bin/XposedBridge.jar.newversion"));
+        ProcessExecutor.executeRootCommand(getCpString(filepathAppProcess, "/data/data/de.robv.android.xposed.installer/bin/app_process"));
+        ProcessExecutor.executeRootCommand("chmod 775 /data/data/de.robv.android.xposed.installer/bin/");
+        ProcessExecutor.executeRootCommand("chmod 644 /data/data/de.robv.android.xposed.installer/bin/XposedBridge.jar");
+        ProcessExecutor.executeRootCommand("chmod 700 /data/data/de.robv.android.xposed.installer/bin/app_process");
+
+        //install signature fake xposed module
+        setDialogMessage(progressDialog, getString(R.string.installing) + " FakeGapps");
+        success = installApk("xposed/apk/com.thermatk.android.xf.fakegapps_v3_bfc686.apk", "fakegapps.apk");
+        if (!success) {
+          return;
+        }
+
+        ProcessExecutor.executeRootCommand("mkdir /data/data/de.robv.android.xposed.installer/conf");
+        filepath = extractAsset("xposed/data/conf/modules.list", "modules.list");
+        ProcessExecutor.executeRootCommand(getCpString(filepath, "/data/data/de.robv.android.xposed.installer/conf/modules.list"));
+        ProcessExecutor.executeRootCommand("chmod 775 /data/data/de.robv.android.xposed.installer/conf/");
+        ProcessExecutor.executeRootCommand("chmod 664 /data/data/de.robv.android.xposed.installer/conf/*");
+
+        ProcessExecutor.executeRootCommand("mkdir /data/data/de.robv.android.xposed.installer/shared_prefs");
+        filepath = extractAsset("xposed/data/shared_prefs/enabled_modules.xml", "enabled_modules.xml");
+        ProcessExecutor.executeRootCommand(getCpString(filepath, "/data/data/de.robv.android.xposed.installer/shared_prefs/enabled_modules.xml"));
+        ProcessExecutor.executeRootCommand("chmod 775 /data/data/de.robv.android.xposed.installer/shared_prefs/");
+        ProcessExecutor.executeRootCommand("chmod 664 /data/data/de.robv.android.xposed.installer/shared_prefs/*");
+
+        for (String dir : new String[]{"bin", "conf", "shared_prefs"}) {
+          StringBuilder cmd = new StringBuilder("busybox find /data/data/de.robv.android.xposed.installer/").append(dir).append(" | busybox xargs chown ").append(owner).append(":").append(owner);
+          ProcessExecutor.executeRootCommand(cmd.toString());
+        }
+
+        setDialogMessage(progressDialog, getString(R.string.installing) + " microG");
+        success = installApk("microg/apk/GmsCore-v0.2.10.19420.apk", "GmsCore.apk");
+        if (!success) {
+          return;
+        }
+        success = installApk("microg/apk/BlankStore.apk", "BlankStore.apk");
+        if (!success) {
+          return;
+        }
+      } catch (RemoteException e) {
+        handleException(e);
+        success = false;
+      } finally {
         try {
-          mountSystemRw();
-
-          //root device and install supersu
-          setDialogMessage(progressDialog, getString(R.string.installing) + " SuperSU");
-          String filepath = extractAsset("su/bin/su", "su");
-          if (filepath == null) {
-            success = false;
-            return;
-          }
-          success = installApk("su/apk/Superuser.apk", "superuser.apk");
-          if (!success) {
-            return;
-          }
-          ProcessExecutor.executeRootCommand(getCpString(filepath, "/system/xbin/su"));
-          ProcessExecutor.executeRootCommand("chmod 6755 /system/xbin/su");
-
-          //install xposed framework
-          setDialogMessage(progressDialog, getString(R.string.installing) + " Xposed framework");
-          String filepathAppProcess = extractAsset("xposed/bin/app_process", "app_process");
-          if (filepathAppProcess == null) {
-            success = false;
-            return;
-          }
-          ProcessExecutor.executeRootCommand("mv /system/bin/app_process /system/bin/app_process.orig");
-          ProcessExecutor.executeRootCommand(getCpString(filepathAppProcess, "/system/bin/app_process"));
-          ProcessExecutor.executeRootCommand("chmod 755 /system/bin/app_process");
-          ProcessExecutor.executeRootCommand("chown root:shell /system/bin/app_process");
-
-          success = installApk("xposed/apk/de.robv.android.xposed.installer_v32_de4f0d.apk", "xposed.apk");
-          if (!success) {
-            return;
-          }
-
-          String owner = getOwner("/data/data", "de.robv.android.xposed.installer");
-          if (owner == null) {
-            success = false;
-            return;
-          }
-
-          filepath = extractAsset("xposed/data/bin/XposedBridge.jar", "XposedBridge.jar");
-          ProcessExecutor.executeRootCommand("mkdir /data/data/de.robv.android.xposed.installer/bin");
-          ProcessExecutor.executeRootCommand(getCpString(filepath, "/data/data/de.robv.android.xposed.installer/bin/XposedBridge.jar.newversion"));
-          ProcessExecutor.executeRootCommand(getCpString(filepathAppProcess, "/data/data/de.robv.android.xposed.installer/bin/app_process"));
-          ProcessExecutor.executeRootCommand("chmod 775 /data/data/de.robv.android.xposed.installer/bin/");
-          ProcessExecutor.executeRootCommand("chmod 644 /data/data/de.robv.android.xposed.installer/bin/XposedBridge.jar");
-          ProcessExecutor.executeRootCommand("chmod 700 /data/data/de.robv.android.xposed.installer/bin/app_process");
-
-          //install signature fake xposed module
-          setDialogMessage(progressDialog, getString(R.string.installing) + " FakeGapps");
-          success = installApk("xposed/apk/com.thermatk.android.xf.fakegapps_v3_bfc686.apk", "fakegapps.apk");
-          if (!success) {
-            return;
-          }
-
-          ProcessExecutor.executeRootCommand("mkdir /data/data/de.robv.android.xposed.installer/conf");
-          filepath = extractAsset("xposed/data/conf/modules.list", "modules.list");
-          ProcessExecutor.executeRootCommand(getCpString(filepath, "/data/data/de.robv.android.xposed.installer/conf/modules.list"));
-          ProcessExecutor.executeRootCommand("chmod 775 /data/data/de.robv.android.xposed.installer/conf/");
-          ProcessExecutor.executeRootCommand("chmod 664 /data/data/de.robv.android.xposed.installer/conf/*");
-
-          ProcessExecutor.executeRootCommand("mkdir /data/data/de.robv.android.xposed.installer/shared_prefs");
-          filepath = extractAsset("xposed/data/shared_prefs/enabled_modules.xml", "enabled_modules.xml");
-          ProcessExecutor.executeRootCommand(getCpString(filepath, "/data/data/de.robv.android.xposed.installer/shared_prefs/enabled_modules.xml"));
-          ProcessExecutor.executeRootCommand("chmod 775 /data/data/de.robv.android.xposed.installer/shared_prefs/");
-          ProcessExecutor.executeRootCommand("chmod 664 /data/data/de.robv.android.xposed.installer/shared_prefs/*");
-
-          for (String dir : new String[]{"bin", "conf", "shared_prefs"}) {
-            StringBuilder cmd = new StringBuilder("busybox find /data/data/de.robv.android.xposed.installer/").append(dir).append(" | busybox xargs chown ").append(owner).append(":").append(owner);
-            ProcessExecutor.executeRootCommand(cmd.toString());
-          }
-
-          setDialogMessage(progressDialog, getString(R.string.installing) + " microG");
-          success = installApk("microg/apk/GmsCore-v0.2.10.19420.apk", "GmsCore.apk");
-          if (!success) {
-            return;
-          }
-          success = installApk("microg/apk/BlankStore.apk", "BlankStore.apk");
-          if (!success) {
-            return;
-          }
+          mountSystemRo();
         } catch (RemoteException e) {
           handleException(e);
-          success = false;
-        } finally {
-          try {
-            mountSystemRo();
-          } catch (RemoteException e) {
-            handleException(e);
-          }
-          progressDialog.dismiss();
-          if (success) {
-            showSuccess();
-          } else {
-            showFailed();
-          }
+        }
+        progressDialog.dismiss();
+        if (success) {
+          showSuccess();
+        } else {
+          showFailed();
         }
       }
     }).start();
   }
 
   private void uninstallMicroG() {
-    if(!new File("/system/bin/app_process.orig").exists()) {
+    if (!new File("/system/bin/app_process.orig").exists()) {
       Toast.makeText(this, R.string.not_installed, Toast.LENGTH_LONG).show();
       return;
     }
@@ -346,35 +334,32 @@ public class MainActivity extends Activity implements View.OnClickListener {
     progressDialog.setCancelable(false);
     progressDialog.show();
 
-    new Thread(new Runnable() {
-      @Override
-      public void run() {
-        boolean success = true;
-        try {
-          final String[] packages = new String[]{"eu.chainfire.supersu", "de.robv.android.xposed.installer", "com.thermatk.android.xf.fakegapps", "com.google.android.gms", "com.android.vending"};
-          for (String pkg : packages) {
-            setDialogMessage(progressDialog, pkg);
-            ProcessExecutor.executeRootCommand("pm uninstall " + pkg);
-          }
-          mountSystemRw();
-          ProcessExecutor.executeRootCommand("rm /system/xbin/su");
-          ProcessExecutor.executeRootCommand("mv /system/bin/app_process.orig /system/bin/app_process");
+    new Thread(() -> {
+      boolean success = true;
+      try {
+        final String[] packages = new String[]{"eu.chainfire.supersu", "de.robv.android.xposed.installer", "com.thermatk.android.xf.fakegapps", "com.google.android.gms", "com.android.vending"};
+        for (String pkg : packages) {
+          setDialogMessage(progressDialog, pkg);
+          ProcessExecutor.executeRootCommand("pm uninstall " + pkg);
+        }
+        mountSystemRw();
+        ProcessExecutor.executeRootCommand("rm /system/xbin/su");
+        ProcessExecutor.executeRootCommand("mv /system/bin/app_process.orig /system/bin/app_process");
 
+      } catch (RemoteException e) {
+        handleException(e);
+        success = false;
+      } finally {
+        try {
+          mountSystemRo();
         } catch (RemoteException e) {
           handleException(e);
-          success = false;
-        } finally {
-          try {
-            mountSystemRo();
-          } catch (RemoteException e) {
-            handleException(e);
-          }
-          progressDialog.dismiss();
-          if(success) {
-            showSuccess();
-          } else {
-            showFailed();
-          }
+        }
+        progressDialog.dismiss();
+        if (success) {
+          showSuccess();
+        } else {
+          showFailed();
         }
       }
     }).start();
@@ -457,42 +442,21 @@ public class MainActivity extends Activity implements View.OnClickListener {
       Class aClass = Class.forName("android.os.SystemProperties");
       Method method = aClass.getDeclaredMethod("get", String.class);
       return (String) method.invoke(null, "ro.lge.fw_version");
-    } catch (ClassNotFoundException e) {
-      handleException(e);
-    } catch (NoSuchMethodException e) {
-      handleException(e);
-    } catch (IllegalAccessException e) {
-      handleException(e);
-    } catch (InvocationTargetException e) {
+    } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
       handleException(e);
     }
     return null;
   }
 
   private void setDialogMessage(final ProgressDialog progressDialog, final String message) {
-    runOnUiThread(new Runnable() {
-      @Override
-      public void run() {
-        progressDialog.setMessage(message);
-      }
-    });
+    runOnUiThread(() -> progressDialog.setMessage(message));
   }
 
   private void showSuccess() {
-    runOnUiThread(new Runnable() {
-      @Override
-      public void run() {
-        Toast.makeText(getApplicationContext(), getString(R.string.successfully_completed), Toast.LENGTH_LONG).show();
-      }
-    });
+    runOnUiThread(() -> Toast.makeText(getApplicationContext(), getString(R.string.successfully_completed), Toast.LENGTH_LONG).show());
   }
 
   private void showFailed() {
-    runOnUiThread(new Runnable() {
-      @Override
-      public void run() {
-        Toast.makeText(getApplicationContext(), getString(R.string.process_failed), Toast.LENGTH_LONG).show();
-      }
-    });
+    runOnUiThread(() -> Toast.makeText(getApplicationContext(), getString(R.string.process_failed), Toast.LENGTH_LONG).show());
   }
 }
