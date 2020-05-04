@@ -477,7 +477,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
   private void setDialogMessage(final ProgressDialog progressDialog, final String message) {
     runOnUiThread(() -> progressDialog.setMessage(message));
   }
-  
+
   private void showFailed() {
     runOnUiThread(() -> Toast.makeText(getApplicationContext(), getString(R.string.process_failed), Toast.LENGTH_LONG).show());
   }

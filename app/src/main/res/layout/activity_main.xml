@@ -49,12 +49,21 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="110dp" />
+    </TableRow>
+
+    <TableRow
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#8BFF0000">
+
         <TextView
             android:id="@+id/textView3"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:background="#E91E1E"
             android:text="@string/danger_zone"
             android:textAlignment="center"
             android:textColor="#000000"
@@ -63,31 +72,28 @@
 
     <TableRow
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:background="#8BFF0000">
 
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="@string/ip" />
+            android:text="@string/ip"
+            android:textColor="#000000" />
 
         <TextView
             android:id="@+id/tv_ip"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="20" />
+            android:layout_weight="20"
+            android:textColor="#000000" />
 
         <Button
             android:id="@+id/btn_refresh_ip"
             android:layout_width="42dp"
             android:layout_height="wrap_content"
             android:drawableLeft="@android:drawable/stat_notify_sync" />
-    </TableRow>
-
-    <TableRow
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="#FF0000">
 
         <Button
             android:id="@+id/btn_telnet_start"
@@ -107,7 +113,7 @@
     <TableRow
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#FF0000">
+        android:background="#8BFF0000">
 
         <Button
             android:id="@+id/btn_install_microg"
@@ -128,7 +134,7 @@
     <TableRow
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#FF0000">
+        android:background="#8BFF0000">
 
         <Button
             android:id="@+id/btn_mount_system_rw"
