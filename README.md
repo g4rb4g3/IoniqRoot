@@ -1,4 +1,12 @@
+
 # IoniqRoot
+
+```diff
+- WARNING: This will disable fastboot mode!
+- The head unit will take more time to boot and it's possible that apps are starting slower.
+- Only reflashing the stock firmware will bring back fastboot.
+```
+
 Brings back stock Settings and Browser applications to your Hyundai Ioniq (28 kWh) running 191209 firmware. <br />
 
 **Features:<br  />**
