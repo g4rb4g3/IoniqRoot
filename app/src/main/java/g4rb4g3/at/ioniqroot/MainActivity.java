@@ -2,6 +2,7 @@ package g4rb4g3.at.ioniqroot;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.DatePickerDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -9,6 +10,7 @@ import android.os.Bundle;
 import android.os.RemoteException;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -53,6 +55,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     findViewById(R.id.btn_eng_upgrade_activity).setOnClickListener(this);
     findViewById(R.id.btn_eng_menu).setOnClickListener(this);
     findViewById(R.id.btn_refresh_ip).setOnClickListener(this);
+    findViewById(R.id.btn_edit_update_date).setOnClickListener(this);
 
     setIp();
   }
@@ -152,6 +155,38 @@ public class MainActivity extends Activity implements View.OnClickListener {
         break;
       case R.id.btn_refresh_ip:
         setIp();
+        break;
+      case R.id.btn_edit_update_date:
+        if (!"XX.EUR.SOP.00.191209".equals(getFwVersion())) {
+          Toast.makeText(this, getString(R.string.wrong_fw_version), Toast.LENGTH_LONG).show();
+          return;
+        }
+        try {
+          final String orgUpdate = ProcessExecutor.execute("getprop persist.sys.u.date");
+          String[] update = orgUpdate.split("\\.");
+          new DatePickerDialog(this,
+              (view, year, monthOfYear, dayOfMonth) -> {
+                if (!view.isShown()) {
+                  return;
+                }
+                String date = String.format(year + ".%02d.%02d", ++monthOfYear, dayOfMonth);
+                if(orgUpdate.equals(date)) {
+                  return;
+                }
+                try {
+                  ProcessExecutor.executeRootCommand("setprop persist.sys.u.date " + date);
+                  askReboot();
+                } catch (RemoteException e) {
+                  handleException(e);
+                }
+              },
+              Integer.valueOf(update[0]),
+              Integer.valueOf(update[1]) - 1,
+              Integer.valueOf(update[2]))
+              .show();
+        } catch (Exception e) {
+          handleException(e);
+        }
         break;
     }
   }

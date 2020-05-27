@@ -14,6 +14,7 @@ Brings back stock Settings and Browser applications to your Hyundai Ioniq (28 kW
 * Restores stock Settings, Package installer and Browser applications
 * Allows you to enter full Engineering Mode
 * Go to password protected upgrade activity in Engineering Mode
+* Allows you to edit the update timestamp of Settings -> System info
 * DANGER ZONE:
 * Allows you to install microG
 * Opens root shell telnet server
