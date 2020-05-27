@@ -56,6 +56,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     findViewById(R.id.btn_eng_menu).setOnClickListener(this);
     findViewById(R.id.btn_refresh_ip).setOnClickListener(this);
     findViewById(R.id.btn_edit_update_date).setOnClickListener(this);
+    findViewById(R.id.btn_clear_update).setOnClickListener(this);
 
     setIp();
   }
@@ -185,6 +186,14 @@ public class MainActivity extends Activity implements View.OnClickListener {
               Integer.valueOf(update[2]))
               .show();
         } catch (Exception e) {
+          handleException(e);
+        }
+        break;
+      case R.id.btn_clear_update:
+        try {
+          ProcessExecutor.executeRootCommand("setprop persist.sys.u.date \"\"");
+          askReboot();
+        } catch (RemoteException e) {
           handleException(e);
         }
         break;

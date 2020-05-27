@@ -55,6 +55,13 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/edit_system_info_update" />
+
+        <Button
+            android:id="@+id/btn_clear_update"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/clear_system_info_update" />
     </TableRow>
 
     <TableRow
@@ -63,7 +70,7 @@
 
         <Space
             android:layout_width="match_parent"
-            android:layout_height="110dp" />
+            android:layout_height="70dp" />
 
     </TableRow>
 
