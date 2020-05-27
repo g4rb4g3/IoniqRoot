@@ -2,8 +2,8 @@
 # IoniqRoot
 
 ```diff
-- WARNING: This will disable fastboot mode!
-- The head unit will take more time to boot and it's possible that apps are starting slower.
+- WARNING: Restoring stock apps will disable fastboot mode!
+- The head unit will take more time to boot and apps will start slower.
 - Only reflashing the stock firmware will bring back fastboot.
 ```
 
