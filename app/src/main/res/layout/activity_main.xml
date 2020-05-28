@@ -1,174 +1,193 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-
-<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/tableLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <TableRow
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
 
-        <Button
-            android:id="@+id/btn_install_stock_apks"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/restore_stock_applications" />
+    <Button
+        android:id="@+id/btn_install_stock_apks"
+        android:layout_width="390dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:text="@string/restore_stock_applications"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
-        <Button
-            android:id="@+id/btn_reboot"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/reboot" />
+    <Button
+        android:id="@+id/btn_reboot"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:text="@string/reboot"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/btn_install_stock_apks"
+        app:layout_constraintTop_toTopOf="parent" />
 
-    </TableRow>
 
-    <TableRow
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
+    <Button
+        android:id="@+id/btn_eng_menu"
+        android:layout_width="390dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:text="@string/go_to_engineer_menu"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/btn_install_stock_apks" />
 
-        <Button
-            android:id="@+id/btn_eng_menu"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/go_to_engineer_menu" />
+    <Button
+        android:id="@+id/btn_eng_upgrade_activity"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:text="@string/go_to_engineer_upgrade_activity"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/btn_eng_menu"
+        app:layout_constraintTop_toBottomOf="@+id/btn_reboot" />
 
-        <Button
-            android:id="@+id/btn_eng_upgrade_activity"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/go_to_engineer_upgrade_activity" />
+    <Button
+        android:id="@+id/btn_edit_update_date"
+        android:layout_width="390dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:text="@string/edit_system_info_update"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/btn_eng_menu" />
 
-    </TableRow>
+    <Button
+        android:id="@+id/btn_clear_update"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:text="@string/clear_system_info_update"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/btn_edit_update_date"
+        app:layout_constraintTop_toBottomOf="@+id/btn_eng_upgrade_activity" />
 
-    <TableRow
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
+    <View
+        android:id="@+id/view"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="#8BFF0000"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/textView3" />
 
-        <Button
-            android:id="@+id/btn_edit_update_date"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/edit_system_info_update" />
+    <Button
+        android:id="@+id/btn_mount_system_rw"
+        android:layout_width="390dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginBottom="8dp"
+        android:text="@string/remount_system_rw"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
-        <Button
-            android:id="@+id/btn_clear_update"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/clear_system_info_update" />
-    </TableRow>
+    <Button
+        android:id="@+id/btn_mount_system_ro"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        android:layout_weight="1"
+        android:text="@string/remount_system_ro"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/btn_mount_system_rw" />
 
-    <TableRow
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
+    <Button
+        android:id="@+id/btn_refresh_ip"
+        android:layout_width="42dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="4dp"
+        android:drawableLeft="@android:drawable/stat_notify_sync"
+        app:layout_constraintBottom_toBottomOf="@+id/btn_telnet_start"
+        app:layout_constraintEnd_toStartOf="@+id/btn_telnet_start" />
 
-        <Space
-            android:layout_width="match_parent"
-            android:layout_height="70dp" />
+    <Button
+        android:id="@+id/btn_install_microg"
+        android:layout_width="390dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginBottom="8dp"
+        android:text="@string/install_microg"
+        app:layout_constraintBottom_toTopOf="@+id/btn_mount_system_rw"
+        app:layout_constraintStart_toStartOf="parent" />
 
-    </TableRow>
+    <Button
+        android:id="@+id/btn_uninstall_microg"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        android:text="@string/uninstall_microg"
+        app:layout_constraintBottom_toTopOf="@+id/btn_mount_system_ro"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/btn_install_microg" />
 
-    <TableRow
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="#8BFF0000">
+    <TextView
+        android:id="@+id/tv_ip"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="20"
+        android:textColor="#000000"
+        app:layout_constraintBottom_toBottomOf="@+id/btn_refresh_ip"
+        app:layout_constraintEnd_toStartOf="@+id/btn_refresh_ip"
+        app:layout_constraintStart_toEndOf="@+id/textView"
+        app:layout_constraintTop_toTopOf="@+id/btn_refresh_ip" />
 
-        <TextView
-            android:id="@+id/textView3"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/danger_zone"
-            android:textAlignment="center"
-            android:textColor="#000000"
-            android:textSize="24sp" />
-    </TableRow>
+    <Button
+        android:id="@+id/btn_telnet_start"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="4dp"
+        android:layout_weight="1"
+        android:text="@string/start_telnet"
+        app:layout_constraintBottom_toBottomOf="@+id/btn_telnet_stop"
+        app:layout_constraintEnd_toStartOf="@+id/btn_telnet_stop" />
 
-    <TableRow
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="#8BFF0000">
+    <Button
+        android:id="@+id/btn_telnet_stop"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        android:text="@string/stop_telnet"
+        app:layout_constraintBottom_toTopOf="@+id/btn_uninstall_microg"
+        app:layout_constraintEnd_toEndOf="parent" />
 
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/ip"
-            android:textColor="#000000" />
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_weight="1"
+        android:text="@string/ip"
+        android:textColor="#000000"
+        app:layout_constraintBottom_toBottomOf="@+id/tv_ip"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/tv_ip" />
 
-        <TextView
-            android:id="@+id/tv_ip"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="20"
-            android:textColor="#000000" />
+    <TextView
+        android:id="@+id/textView3"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="4dp"
+        android:text="@string/danger_zone"
+        android:textAlignment="center"
+        android:textColor="#000000"
+        android:textSize="24sp"
+        app:layout_constraintBottom_toTopOf="@+id/btn_refresh_ip"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent" />
 
-        <Button
-            android:id="@+id/btn_refresh_ip"
-            android:layout_width="42dp"
-            android:layout_height="wrap_content"
-            android:drawableLeft="@android:drawable/stat_notify_sync" />
-
-        <Button
-            android:id="@+id/btn_telnet_start"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/start_telnet" />
-
-        <Button
-            android:id="@+id/btn_telnet_stop"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/stop_telnet" />
-    </TableRow>
-
-    <TableRow
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="#8BFF0000">
-
-        <Button
-            android:id="@+id/btn_install_microg"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/install_microg" />
-
-        <Button
-            android:id="@+id/btn_uninstall_microg"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/uninstall_microg" />
-
-    </TableRow>
-
-    <TableRow
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="#8BFF0000">
-
-        <Button
-            android:id="@+id/btn_mount_system_rw"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/remount_system_rw" />
-
-        <Button
-            android:id="@+id/btn_mount_system_ro"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/remount_system_ro" />
-    </TableRow>
-
-</TableLayout>
+</android.support.constraint.ConstraintLayout>

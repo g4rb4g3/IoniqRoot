@@ -10,7 +10,6 @@ import android.os.Bundle;
 import android.os.RemoteException;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -165,9 +164,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
         }
         try {
           String orgUpdate = ProcessExecutor.execute("getprop persist.sys.u.date");
-          if(orgUpdate == null || "".equals(orgUpdate)) {
+          if (orgUpdate == null || "".equals(orgUpdate)) {
             Calendar calendar = Calendar.getInstance();
-            orgUpdate = String.format(calendar.get(Calendar.YEAR)  + ".%02d.%02d", calendar.get(Calendar.MONTH) + 1, calendar.get(Calendar.DAY_OF_MONTH));
+            orgUpdate = String.format(calendar.get(Calendar.YEAR) + ".%02d.%02d", calendar.get(Calendar.MONTH) + 1, calendar.get(Calendar.DAY_OF_MONTH));
           }
           String[] update = orgUpdate.split("\\.");
           final String finalOrgUpdate = orgUpdate;
@@ -177,7 +176,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                   return;
                 }
                 String date = String.format(year + ".%02d.%02d", ++monthOfYear, dayOfMonth);
-                if(finalOrgUpdate.equals(date)) {
+                if (finalOrgUpdate.equals(date)) {
                   return;
                 }
                 try {
