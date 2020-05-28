@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.SocketException;
+import java.util.Calendar;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -163,15 +164,20 @@ public class MainActivity extends Activity implements View.OnClickListener {
           return;
         }
         try {
-          final String orgUpdate = ProcessExecutor.execute("getprop persist.sys.u.date");
+          String orgUpdate = ProcessExecutor.execute("getprop persist.sys.u.date");
+          if(orgUpdate == null || "".equals(orgUpdate)) {
+            Calendar calendar = Calendar.getInstance();
+            orgUpdate = String.format(calendar.get(Calendar.YEAR)  + ".%02d.%02d", calendar.get(Calendar.MONTH) + 1, calendar.get(Calendar.DAY_OF_MONTH));
+          }
           String[] update = orgUpdate.split("\\.");
+          final String finalOrgUpdate = orgUpdate;
           new DatePickerDialog(this,
               (view, year, monthOfYear, dayOfMonth) -> {
                 if (!view.isShown()) {
                   return;
                 }
                 String date = String.format(year + ".%02d.%02d", ++monthOfYear, dayOfMonth);
-                if(orgUpdate.equals(date)) {
+                if(finalOrgUpdate.equals(date)) {
                   return;
                 }
                 try {
