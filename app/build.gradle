@@ -1,13 +1,14 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 17
+    compileSdkVersion 28
     defaultConfig {
         applicationId "g4rb4g3.at.ioniqroot"
         minSdkVersion 17
         targetSdkVersion 17
         versionCode 1
         versionName "1.0"
+        useLibrary "org.apache.http.legacy"
     }
     buildTypes {
         release {
