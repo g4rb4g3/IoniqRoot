@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">IoniqRoot</string>
-    <string name="wrong_fw_version">Wrong firmware version. This has only been tested with 191209 release.</string>
+    <string name="app_name_version">IoniqRoot %1$s</string>
+    <string name="wrong_fw_version">Wrong firmware version. This has only been tested with 191209 and 200731 release.</string>
     <string name="restoring_stock_apk">Restoring stock applications</string>
     <string name="restore_stock_applications">Restore stock applications</string>
     <string name="successfully_completed">Process finished successfully, please reboot to apply changes.</string>
@@ -31,4 +32,6 @@
     <string name="cancel">Cancel</string>
     <string name="edit_system_info_update">Edit \'System info\' update</string>
     <string name="clear_system_info_update">Clear \'System info\' update</string>
+    <string name="restore_fastboot">Restore Fastboot</string>
+    <string name="restore_fastboot_msg">This will restore Fastboot mode, remove stock apps and microG. The head unit will reboot automatically.</string>
 </resources>

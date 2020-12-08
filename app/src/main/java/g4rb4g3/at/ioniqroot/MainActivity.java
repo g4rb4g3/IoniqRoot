@@ -18,6 +18,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.RandomAccessFile;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.SocketException;
@@ -31,6 +32,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
   public static final String PREFERENCES_NAME = "preferences";
   public static final String PREFERENCE_DISCLAIMER_APPROVED = "disclaimer_approved";
+  public static final String[] MICRO_G_PACKAGES = new String[]{"eu.chainfire.supersu", "de.robv.android.xposed.installer", "com.thermatk.android.xf.fakegapps", "com.google.android.gms", "com.android.vending"};
 
   private SharedPreferences mSharedPreferences;
 
@@ -44,6 +46,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
     }
 
     setContentView(R.layout.activity_main);
+    setTitle(getString(R.string.app_name_version, BuildConfig.VERSION_NAME));
+
     findViewById(R.id.btn_telnet_start).setOnClickListener(this);
     findViewById(R.id.btn_telnet_stop).setOnClickListener(this);
     findViewById(R.id.btn_uninstall_microg).setOnClickListener(this);
@@ -57,6 +61,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     findViewById(R.id.btn_refresh_ip).setOnClickListener(this);
     findViewById(R.id.btn_edit_update_date).setOnClickListener(this);
     findViewById(R.id.btn_clear_update).setOnClickListener(this);
+    findViewById(R.id.btn_restore_fastboot).setOnClickListener(this);
 
     setIp();
   }
@@ -117,7 +122,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
       case R.id.btn_mount_system_rw:
         try {
           mountSystemRw();
-        } catch (RemoteException e) {
+        } catch (RemoteException | IOException e) {
           handleException(e);
         }
         break;
@@ -158,7 +163,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
         setIp();
         break;
       case R.id.btn_edit_update_date:
-        if (!"XX.EUR.SOP.00.191209".equals(getFwVersion())) {
+        String fwVer = getFwVersion();
+        if (!"191209".equals(fwVer) && !"200731".equals(fwVer)) {
           Toast.makeText(this, getString(R.string.wrong_fw_version), Toast.LENGTH_LONG).show();
           return;
         }
@@ -202,6 +208,13 @@ public class MainActivity extends Activity implements View.OnClickListener {
           handleException(e);
         }
         break;
+      case R.id.btn_restore_fastboot:
+        try {
+          restoreFastboot(true);
+        } catch (IOException | RemoteException e) {
+          handleException(e);
+        }
+        break;
     }
   }
 
@@ -214,7 +227,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
   }
 
   private void installStockApks() {
-    if (!"XX.EUR.SOP.00.191209".equals(getFwVersion())) {
+    String fwVer = getFwVersion();
+    if (!"191209".equals(fwVer) && !"200731".equals(fwVer)) {
       Toast.makeText(this, getString(R.string.wrong_fw_version), Toast.LENGTH_LONG).show();
       return;
     }
@@ -241,22 +255,26 @@ public class MainActivity extends Activity implements View.OnClickListener {
         mountSystemRw();
 
         for (final String file : files) {
+          if(file.endsWith(".odex") && !file.endsWith(fwVer + ".odex")) {
+            continue;
+          }
           runOnUiThread(() -> {
             progressDialog.setMessage(file);
             progressDialog.incrementProgressBy(1);
           });
 
-          String filepath = extractAsset("stock/apk/" + file, file);
+          String filepath = extractAsset("stock/apk/" + file, file.replace("." + fwVer, ""));
           if (filepath == null) {
             throw new FileNotFoundException("error extracting asset " + file);
           }
 
-          ProcessExecutor.executeRootCommand(getCpString(filepath, "/system/app/" + file));
-          ProcessExecutor.executeRootCommand("chmod 644 /system/app/" + file);
+          File f = new File(filepath);
+          ProcessExecutor.executeRootCommand(getCpString(filepath, "/system/app/" + f.getName()));
+          ProcessExecutor.executeRootCommand("chmod 644 /system/app/" + f.getName());
 
-          new File(filepath).delete();
+          f.delete();
         }
-      } catch (RemoteException | FileNotFoundException e) {
+      } catch (RemoteException | IOException e) {
         handleException(e);
         success = false;
       } finally {
@@ -376,7 +394,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         if (!success) {
           return;
         }
-      } catch (RemoteException e) {
+      } catch (RemoteException | IOException e) {
         handleException(e);
         success = false;
       } finally {
@@ -412,16 +430,12 @@ public class MainActivity extends Activity implements View.OnClickListener {
     new Thread(() -> {
       boolean success = true;
       try {
-        final String[] packages = new String[]{"eu.chainfire.supersu", "de.robv.android.xposed.installer", "com.thermatk.android.xf.fakegapps", "com.google.android.gms", "com.android.vending"};
-        for (String pkg : packages) {
-          setDialogMessage(progressDialog, pkg);
-          ProcessExecutor.executeRootCommand("pm uninstall " + pkg);
-        }
+        uninstallMicroGapk(progressDialog);
         mountSystemRw();
         ProcessExecutor.executeRootCommand("rm /system/xbin/su");
         ProcessExecutor.executeRootCommand("mv /system/bin/app_process.orig /system/bin/app_process");
 
-      } catch (RemoteException e) {
+      } catch (RemoteException | IOException e) {
         handleException(e);
         success = false;
       } finally {
@@ -440,6 +454,15 @@ public class MainActivity extends Activity implements View.OnClickListener {
     }).start();
   }
 
+  private void uninstallMicroGapk(ProgressDialog progressDialog) throws RemoteException {
+    for (String pkg : MICRO_G_PACKAGES) {
+      if(progressDialog != null) {
+        setDialogMessage(progressDialog, pkg);
+      }
+      ProcessExecutor.executeRootCommand("pm uninstall " + pkg);
+    }
+  }
+
   private String getCpString(String filepath, String target) {
     StringBuilder cmd = new StringBuilder("cp ")
         .append(filepath)
@@ -448,8 +471,11 @@ public class MainActivity extends Activity implements View.OnClickListener {
     return cmd.toString();
   }
 
-  private void mountSystemRw() throws RemoteException {
-    ProcessExecutor.executeRootCommand("/system/bin/dd if=/dev/zero of=/dev/block/wrs_ss0p0 bs=80 count=1");
+  private void mountSystemRw() throws RemoteException, IOException {
+    boolean fbEnabled = checkFastbootEnabled();
+    if(fbEnabled) {
+      ProcessExecutor.executeRootCommand("/system/bin/dd if=/dev/zero of=/dev/block/wrs_ss0p0 bs=80 count=1");
+    }
     ProcessExecutor.executeRootCommand("mount -o remount,rw /system");
   }
 
@@ -516,7 +542,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
     try {
       Class aClass = Class.forName("android.os.SystemProperties");
       Method method = aClass.getDeclaredMethod("get", String.class);
-      return (String) method.invoke(null, "ro.lge.fw_version");
+      String fwVer = (String) method.invoke(null, "ro.lge.fw_version");
+      if(fwVer.startsWith("XX.EUR.SOP.00.")) {
+        return fwVer.substring(fwVer.lastIndexOf(".") + 1);
+      }
     } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
       handleException(e);
     }
@@ -548,6 +577,77 @@ public class MainActivity extends Activity implements View.OnClickListener {
   private void clearCache() {
     for (File file : getCacheDir().listFiles()) {
       file.delete();
+    }
+  }
+
+  private boolean checkFastbootEnabled() throws IOException, RemoteException {
+    boolean fbEnabled = false;
+    ProcessExecutor.executeRootCommand("/system/bin/dd if=/dev/block/wrs_ss0p0 of=/ivibackup/wrs_ss0p0.img  bs=80 count=1");
+    ProcessExecutor.executeRootCommand("chmod 644 /ivibackup/wrs_ss0p0.img");
+
+    RandomAccessFile raf = new RandomAccessFile("/ivibackup/wrs_ss0p0.img", "r");
+    byte[] content = new byte[80];
+    raf.readFully(content, 0, content.length);
+    for(byte b : content) {
+      if(b != 0) {
+        fbEnabled = true;
+        break;
+      }
+    }
+
+    if(fbEnabled) {
+      String fwVer = getFwVersion();
+      ProcessExecutor.executeRootCommand("mv /ivibackup/wrs_ss0p0.img /ivibackup/wrs_ss0p0." + fwVer + ".bak");
+    } else {
+      ProcessExecutor.executeRootCommand("rm /ivibackup/wrs_ss0p0.img");
+    }
+    return fbEnabled;
+  }
+
+  private void restoreFastboot(boolean showDialog) throws IOException, RemoteException {
+    if(showDialog) {
+      runOnUiThread(() -> {
+        new AlertDialog.Builder(this)
+          .setMessage(R.string.restore_fastboot_msg)
+          .setPositiveButton(R.string.ok, (dialog, which) -> {
+            try {
+              restoreFastboot(false);
+            } catch (IOException | RemoteException e) {
+              handleException(e);
+            }
+          })
+          .setNegativeButton(R.string.cancel, (dialog, which) -> {
+            dialog.dismiss();
+          })
+          .show();
+      });
+      return;
+    }
+
+    boolean success = false;
+    String fwVer = getFwVersion();
+    if(!new File("/ivibackup/wrs_ss0p0." + fwVer + ".bak").exists()) {
+      throw new FileNotFoundException("/ivibackup/wrs_ss0p0." + fwVer + ".bak");
+    }
+    try {
+      mountSystemRw();
+      if (new File("/system/bin/app_process.orig").exists()) {
+        ProcessExecutor.executeRootCommand("mv /system/bin/app_process.orig /system/bin/app_process");
+      }
+      String[] filesToDelete = new String[] {"/system/xbin/su", "/system/app/Browser.apk", "/system/app/Browser.odex", "/system/app/PackageInstaller.apk", "/system/app/PackageInstaller.odex", "/system/app/Settings.apk", "/system/app/Settings.odex"};
+      for(String f : filesToDelete) {
+        if (new File(f).exists()) {
+          ProcessExecutor.executeRootCommand("rm " + f);
+        }
+      }
+      uninstallMicroGapk(null);
+      ProcessExecutor.executeRootCommand("/system/bin/dd if=/ivibackup/wrs_ss0p0." + fwVer + ".bak of=/dev/block/wrs_ss0p0  bs=80 count=1");
+      success = true;
+    } finally {
+      mountSystemRo();
+      if(success) {
+        reboot();
+      }
     }
   }
 }

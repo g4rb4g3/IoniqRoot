@@ -2,12 +2,11 @@
 # IoniqRoot
 
 ```diff
-- WARNING: Restoring stock apps will disable fastboot mode!
+- WARNING: Restoring stock apps or installing microG will disable fastboot mode!
 - The head unit will take more time to boot and apps will start slower.
-- Only reflashing the stock firmware will bring back fastboot.
 ```
 
-Brings back stock Settings and Browser applications to your Hyundai Ioniq (28 kWh) running 191209 firmware. <br />
+Brings back stock Settings and Browser applications to your Hyundai Ioniq (28 kWh) running 191209 or 200731 firmware. <br />
 
 **Features:<br  />**
 * Launches on double press of settings button
@@ -19,6 +18,7 @@ Brings back stock Settings and Browser applications to your Hyundai Ioniq (28 kW
 * Allows you to install microG
 * Opens root shell telnet server
 * Mount system partition read & write or read only
+* Restore Fastboot mode (works only if IoniqRoot version >= 0.6 was used to restore stock apps / install microG, stock apps and microG will be removed)
 
 ![Screenshot](doc/screenshot.png)
 

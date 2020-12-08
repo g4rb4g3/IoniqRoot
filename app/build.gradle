@@ -6,8 +6,8 @@ android {
         applicationId "g4rb4g3.at.ioniqroot"
         minSdkVersion 17
         targetSdkVersion 17
-        versionCode 1
-        versionName "1.0"
+        versionCode 2
+        versionName "0.6"
         useLibrary "org.apache.http.legacy"
     }
     buildTypes {
@@ -23,5 +23,6 @@ android {
 }
 
 dependencies {
-    compileOnly fileTree(dir: 'libs', include: ['*.jar'])
+    compileOnly fileTree(dir: 'libs', include: ['com.lge.ivi_191209.jar'])
+    implementation 'com.android.support.constraint:constraint-layout:1.1.3'
 }
