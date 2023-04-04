@@ -2,6 +2,7 @@
 # IoniqRoot
 
 ```diff
+- Abandonware! Since I sold my Ioniq a while back there is no more development going on here.
 - WARNING: Restoring stock apps or installing microG will disable fastboot mode!
 - The head unit will take more time to boot and apps will start slower.
 ```
